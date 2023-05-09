@@ -1,4 +1,4 @@
-import { PureComponent } from 'react';
+import { Component } from 'react';
 import axios from 'axios';
 import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
@@ -8,7 +8,7 @@ import Button from './Button';
 
 // axios.defaults.baseURL = 'https://pixabay.com/api/?q=cat&page=1&key=your_key&image_type=photo&orientation=horizontal&per_page=12';
 
-class App extends PureComponent {
+class App extends Component {
   state = {
     images: [],
     isLoading: false,
@@ -82,11 +82,11 @@ class App extends PureComponent {
         }}
       >
         <Searchbar onFormSubmit={this.formSubmitHandler} />
-        {isLoading && <Loader />}
         <ImageGallery images={images} showModal={this.toggleModal} />
         {showModal && (
           <Modal largeImageURL={largeImageURL} onClose={this.toggleModal} />
         )}
+        {isLoading && <Loader />}
         {isLoadMore && <Button images={images} onClick={this.LoadMoreBtn} />}
       </div>
     );
