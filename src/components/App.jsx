@@ -1,16 +1,15 @@
 import { Component } from 'react';
-import axios from 'axios';
+import { getImages } from './services/Api';
 import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
 import Loader from './Loader';
 import Modal from './Modal';
 import Button from './Button';
 
-// axios.defaults.baseURL = 'https://pixabay.com/api/?q=cat&page=1&key=your_key&image_type=photo&orientation=horizontal&per_page=12';
-
 class App extends Component {
   state = {
     images: [],
+    render: false,
     isLoading: false,
     showModal: false,
     isLoadMore: false,
@@ -23,28 +22,16 @@ class App extends Component {
   };
 
   async componentDidUpdate(prevProps, prevState) {
-    const url = 'https://pixabay.com/api/';
-    const KEY = '34367091-415fdde7ec5b95c0f515d26a0';
-    const options = {
-      params: {
-        key: KEY,
-        q: this.state.imageName,
-        image_type: 'photo',
-        orientation: 'horizontal',
-        ID: 12345,
-        page: this.state.page,
-        per_page: 12,
-      },
-    };
 
     if (
       prevState.imageName !== this.state.imageName ||
       prevState.page !== this.state.page
     ) {
       try {
-        const response = await axios.get(url, options);
+        const response = await getImages(this.state.page, this.state.imageName);
         this.setState(prevState => {
           return {
+            render: true,
             isLoading: false,
             images: prevState.images.concat(response.data.hits),
             isLoadMore: true,
@@ -63,14 +50,14 @@ class App extends Component {
     }));
   };
 
-  LoadMoreBtn = () => {
+  loadMoreBtn = () => {
     this.setState(prevState => {
       return { page: prevState.page + 1, isLoading: true };
     });
   };
 
   render() {
-    const { showModal, images, isLoading, largeImageURL, isLoadMore } =
+    const { showModal, images, render, isLoading, largeImageURL, isLoadMore } =
       this.state;
     return (
       <div
@@ -82,12 +69,14 @@ class App extends Component {
         }}
       >
         <Searchbar onFormSubmit={this.formSubmitHandler} />
-        <ImageGallery images={images} showModal={this.toggleModal} />
+        {render && (
+          <ImageGallery images={images} showModal={this.toggleModal} />
+        )}
         {showModal && (
           <Modal largeImageURL={largeImageURL} onClose={this.toggleModal} />
         )}
         {isLoading && <Loader />}
-        {isLoadMore && <Button images={images} onClick={this.LoadMoreBtn} />}
+        {isLoadMore && <Button images={images} onClick={this.loadMoreBtn} />}
       </div>
     );
   }
