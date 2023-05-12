@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import { getImages } from './services/Api';
 import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
@@ -6,80 +6,67 @@ import Loader from './Loader';
 import Modal from './Modal';
 import Button from './Button';
 
-class App extends Component {
-  state = {
-    images: [],
-    render: false,
-    isLoading: false,
-    showModal: false,
-    isLoadMore: false,
-    largeImageURL: '',
-    page: 1,
+export default function App() {
+  const [imageName, setImageName] = useState('');
+  const [images, setImages] = useState([]);
+  const [render, setRender] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [isLoadMore, setIsLoadMore] = useState(false);
+  const [largeImageURL, setLargeImageURL] = useState('');
+  const [page, setPage] = useState(1);
+
+  const formSubmitHandler = imageName => {
+    setImageName(imageName);
+    setIsLoading(true);
+    setImages([]);
+    setPage(1);
   };
 
-  formSubmitHandler = imageName => {
-    this.setState({ imageName, isLoading: true, images: [], page: 1 });
-  };
-
-  async componentDidUpdate(prevProps, prevState) {
-
-    if (
-      prevState.imageName !== this.state.imageName ||
-      prevState.page !== this.state.page
-    ) {
+  useEffect(() => {
+    if (!imageName) {
+      return
+    }
+    async function fetchData() {
       try {
-        const response = await getImages(this.state.page, this.state.imageName);
-        this.setState(prevState => {
-          return {
-            render: true,
-            isLoading: false,
-            images: prevState.images.concat(response.data.hits),
-            isLoadMore: true,
-          };
-        });
+        const response = await getImages(imageName, page);
+        setRender(true);
+        setIsLoading(false);
+        setImages(images.concat(response.data.hits));
+        setIsLoadMore(true);
       } catch (error) {
         console.error(error);
       }
     }
-  }
+    fetchData();
+  }, [imageName, page]);
 
-  toggleModal = largeImageURL => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-      largeImageURL: largeImageURL,
-    }));
+  const toggleModal = largeImageURL => {
+    setShowModal(!showModal);
+    setLargeImageURL(largeImageURL);
   };
 
-  loadMoreBtn = () => {
-    this.setState(prevState => {
-      return { page: prevState.page + 1, isLoading: true };
-    });
+  const loadMoreBtn = () => {
+    setPage(page + 1);
+    setIsLoading(true);
   };
 
-  render() {
-    const { showModal, images, render, isLoading, largeImageURL, isLoadMore } =
-      this.state;
-    return (
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr',
-          gridGap: 16,
-          paddingBottom: 24,
-        }}
-      >
-        <Searchbar onFormSubmit={this.formSubmitHandler} />
-        {render && (
-          <ImageGallery images={images} showModal={this.toggleModal} />
-        )}
-        {showModal && (
-          <Modal largeImageURL={largeImageURL} onClose={this.toggleModal} />
-        )}
-        {isLoading && <Loader />}
-        {isLoadMore && <Button images={images} onClick={this.loadMoreBtn} />}
-      </div>
-    );
-  }
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr',
+        gridGap: 16,
+        paddingBottom: 24,
+      }}
+    >
+      <Searchbar onFormSubmit={formSubmitHandler} />
+      {render && <ImageGallery images={images} showModal={toggleModal} />}
+      {showModal && (
+        <Modal largeImageURL={largeImageURL} onClose={toggleModal} />
+      )}
+      {isLoading && <Loader />}
+      {isLoadMore && <Button images={images} onClick={loadMoreBtn} />}
+    </div>
+  );
 }
-
-export default App;
