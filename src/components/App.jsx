@@ -21,18 +21,19 @@ export default function App() {
     setIsLoading(true);
     setImages([]);
     setPage(1);
+    setIsLoadMore(false);
   };
 
   useEffect(() => {
     if (!imageName) {
-      return
+      return;
     }
     async function fetchData() {
       try {
         const response = await getImages(imageName, page);
         setRender(true);
         setIsLoading(false);
-        setImages(images.concat(response.data.hits));
+        setImages(images => images.concat(response.data.hits));
         setIsLoadMore(true);
       } catch (error) {
         console.error(error);
