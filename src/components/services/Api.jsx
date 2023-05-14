@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const getImages = (imageName, page) => {
+export const getImages = (imageName, page, controller) => {
   const url = 'https://pixabay.com/api/';
   const KEY = '34367091-415fdde7ec5b95c0f515d26a0';
   const options = {
@@ -12,6 +12,7 @@ export const getImages = (imageName, page) => {
       ID: 12345,
       page: page,
       per_page: 12,
+      signal: controller.signal,
     },
   };
   return axios.get(url, options);

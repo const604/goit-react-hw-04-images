@@ -28,9 +28,11 @@ export default function App() {
     if (!imageName) {
       return;
     }
+    const abortController = new AbortController();
+
     async function fetchData() {
       try {
-        const response = await getImages(imageName, page);
+        const response = await getImages(imageName, page, abortController);
         setRender(true);
         setIsLoading(false);
         setImages(images => images.concat(response.data.hits));
@@ -48,7 +50,7 @@ export default function App() {
   };
 
   const loadMoreBtn = () => {
-    setPage(page + 1);
+    setPage(page => page + 1);
     setIsLoading(true);
   };
 
